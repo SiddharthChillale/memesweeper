@@ -128,7 +128,7 @@ MemeField::MemeField(int nMemes)
         TileAt(spawnPos).SpawnMeme();
     }
 
-    for (Vei2 gridPos = { 0, 0 }; gridPos.y < height; gridPos.y++) {
+    for (Vei2 gridPos = { 0, 0}; gridPos.y < height; gridPos.y++) {
         for (gridPos.x = 0; gridPos.x < width; gridPos.x++) {
             int memeCount = 0;
             for (int xi = gridPos.x - 1; xi <= gridPos.x + 1; xi++) {
@@ -159,25 +159,25 @@ void MemeField::Draw(Graphics& gfx)
     for (Vei2 gridPos = { 0, 0 }; gridPos.y < height; gridPos.y++) {
         for (gridPos.x = 0; gridPos.x < width; gridPos.x++) {
 
-            TileAt(gridPos).Draw(gridPos * SpriteCodex::tileSize, gfx);
+            TileAt(gridPos).Draw(topleft + gridPos * SpriteCodex::tileSize, gfx);
         }
     }
     if (memeStepped) {
-        TileAt(caught_meme_trap).DrawCaught(caught_meme_trap * SpriteCodex::tileSize, gfx);
+        TileAt(caught_meme_trap).DrawCaught(topleft + caught_meme_trap * SpriteCodex::tileSize, gfx);
     }
 }
 
 RectI MemeField::GetRect() const
 {
-    return RectI(0, width * SpriteCodex::tileSize, 0, height * SpriteCodex::tileSize);
+    return RectI(left, left + width * SpriteCodex::tileSize, top, top + height * SpriteCodex::tileSize);
 }
 
 bool MemeField::UpdateOnClick(const Vei2& screenPos)
 {
 
     
-    Vei2 gridPos = screenPos / SpriteCodex::tileSize;
-    assert(gridPos.x >= 0 && gridPos.x < width&& gridPos.y >= 0 && gridPos.y < height);
+    Vei2 gridPos = (screenPos - topleft) / SpriteCodex::tileSize;
+    assert(gridPos.x >= 0 && gridPos.x < width && gridPos.y >= 0 && gridPos.y < height);
 
     Tile& interestedTile = TileAt(gridPos);
 
@@ -230,7 +230,7 @@ void MemeField::SetGameOver()
     memeStepped = true;
 
     // Reveal all tiles with memes
-    for (Vei2 gridPos = { 0, 0 }; gridPos.y < height; gridPos.y++) {
+    for (Vei2 gridPos = { 0, 0}; gridPos.y < height; gridPos.y++) {
         for (gridPos.x = 0; gridPos.x < width; gridPos.x++) {
 
             if (TileAt(gridPos).HasMeme()) {

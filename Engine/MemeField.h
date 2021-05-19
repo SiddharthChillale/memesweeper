@@ -1,6 +1,7 @@
 #pragma once
 #include "Graphics.h"
 #include "Mouse.h"
+#include "SpriteCodex.h"
 
 class MemeField {
 private:
@@ -46,6 +47,9 @@ private:
 private:
 	static constexpr int width = 20;
 	static constexpr int height = 20;
+	static constexpr int left = (Graphics::ScreenWidth - width * SpriteCodex::tileSize) / 2;
+	static constexpr int top = 50;
+	Vei2 topleft = { left, top };
 	Tile Field[width * height];
 	bool memeStepped = false;
 	Vei2 caught_meme_trap;
