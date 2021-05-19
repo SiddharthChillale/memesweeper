@@ -44,6 +44,6 @@ private:
 	/********************************/
 	/*  User Variables              */
 	MemeField memefield;
-
+	bool GameOver = false;
 	/********************************/
 };

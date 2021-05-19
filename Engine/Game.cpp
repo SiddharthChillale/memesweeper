@@ -39,10 +39,20 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
-	
+	if (!GameOver) {
+		if (wnd.mouse.LeftIsPressed()) {
+			GameOver = memefield.UpdateOnClick(wnd.mouse.GetPos());
+		}
+		if (wnd.mouse.RightIsPressed()) {
+			memefield.FlagOnCLick(wnd.mouse.GetPos());
+
+		}
+	}
+
 }
 
 void Game::ComposeFrame()
 {
+	
 	memefield.Draw(gfx);
 }
