@@ -14,10 +14,13 @@ private:
 	private:
 		State state = State::Hidden;
 		bool hasMeme = false;
-		
+		int memeNeighbours;
 	public:
 		void Draw( const Vei2& screenPos , Graphics& gfx) const;
 		void DrawCaught(const Vei2& screenPos, Graphics& gfx) const;
+
+		
+		void UpdateMemesNearby(int memeCount) ;
 		//void SetState(const State in_state);
 		void SpawnMeme(); // why public
 		void Reveal();

@@ -16,12 +16,38 @@ void MemeField::Tile::Draw(const Vei2& screenPos, Graphics& gfx) const
         break;
     case State::Revealed: {
         if (!hasMeme) {
-            SpriteCodex::DrawTile0(screenPos, gfx);
+            switch (memeNeighbours) {
+            case 0:
+                SpriteCodex::DrawTile0(screenPos, gfx);
+                break;
+            case 1:
+                SpriteCodex::DrawTile1(screenPos, gfx);
+                break;
+            case 2:
+                SpriteCodex::DrawTile2(screenPos, gfx);
+                break;
+            case 3:
+                SpriteCodex::DrawTile3(screenPos, gfx);
+                break;
+            case 4:
+                SpriteCodex::DrawTile4(screenPos, gfx);
+                break;
+            case 5:
+                SpriteCodex::DrawTile5(screenPos, gfx);
+                break;
+            case 6:
+                SpriteCodex::DrawTile6(screenPos, gfx);
+                break;
+            case 7:
+                SpriteCodex::DrawTile7(screenPos, gfx);
+                break;
+            case 8:
+                SpriteCodex::DrawTile8(screenPos, gfx);
+                break;
+            }
         }
-        else {
-
+        else {            
             SpriteCodex::DrawTileBomb(screenPos, gfx);
-            
         }
         break;
     }
@@ -32,6 +58,18 @@ void MemeField::Tile::DrawCaught(const Vei2& screenPos, Graphics& gfx) const
 {
     SpriteCodex::DrawTileBombRed(screenPos, gfx);
 }
+
+
+void MemeField::Tile::UpdateMemesNearby(int memeCount)
+{
+    // code for checking num of memes nearby
+    // set number for each tile in its object
+    assert(memeCount >= 0 && memeCount < 9);
+    memeNeighbours = memeCount;
+
+
+}
+
 
 
 void MemeField::Tile::SpawnMeme()
@@ -90,6 +128,19 @@ MemeField::MemeField(int nMemes)
         TileAt(spawnPos).SpawnMeme();
     }
 
+    for (Vei2 gridPos = { 0, 0 }; gridPos.y < height; gridPos.y++) {
+        for (gridPos.x = 0; gridPos.x < width; gridPos.x++) {
+            int memeCount = 0;
+            for (int xi = gridPos.x - 1; xi <= gridPos.x + 1; xi++) {
+                for (int yi = gridPos.y - 1; yi <= gridPos.y + 1; yi++) {
+                    if (TileAt(Vei2(xi, yi)).HasMeme()) {
+                        memeCount++;
+                    }
+                }
+            }
+            TileAt(gridPos).UpdateMemesNearby(memeCount);
+        }
+    }
     //reveal test
     /*for (int i = 0; i < 120; i++) {
         TileAt({ xDist(rng), yDist(rng) }).Reveal();
@@ -107,7 +158,7 @@ void MemeField::Draw(Graphics& gfx)
     gfx.DrawRect(GetRect(), SpriteCodex::baseColor);
     for (Vei2 gridPos = { 0, 0 }; gridPos.y < height; gridPos.y++) {
         for (gridPos.x = 0; gridPos.x < width; gridPos.x++) {
-            
+
             TileAt(gridPos).Draw(gridPos * SpriteCodex::tileSize, gfx);
         }
     }
@@ -127,6 +178,7 @@ bool MemeField::UpdateOnClick(const Vei2& screenPos)
     
     Vei2 gridPos = screenPos / SpriteCodex::tileSize;
     assert(gridPos.x >= 0 && gridPos.x < width&& gridPos.y >= 0 && gridPos.y < height);
+
     Tile& interestedTile = TileAt(gridPos);
 
     if (!interestedTile.IsRevealed() && !interestedTile.IsFlagged() ) {
