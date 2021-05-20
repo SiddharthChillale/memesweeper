@@ -2,6 +2,7 @@
 #include "SpriteCodex.h"
 #include <assert.h>
 #include <random>
+#include <algorithm>
 
 void MemeField::Tile::Draw(const Vei2& screenPos, Graphics& gfx) const
 {
@@ -77,9 +78,15 @@ void MemeField::Tile::SpawnMeme()
     assert(!hasMeme);
     hasMeme = true;
 }
+int MemeField::Tile::GetMemeCount() const
+{
+    return memeNeighbours;
+}
 void MemeField::Tile::Reveal()
 {
     state = State::Revealed;
+    
+
 }
 bool MemeField::Tile::IsRevealed() const
 {
@@ -95,6 +102,7 @@ void MemeField::Tile::Flag(bool flag_state)
         state = State::Hidden;
     }
 }
+
 bool MemeField::Tile::IsFlagged() const
 {
     return state == State::Flagged;
@@ -130,21 +138,28 @@ MemeField::MemeField(int nMemes)
 
     for (Vei2 gridPos = { 0, 0}; gridPos.y < height; gridPos.y++) {
         for (gridPos.x = 0; gridPos.x < width; gridPos.x++) {
+
+
             int memeCount = 0;
-            for (int xi = gridPos.x - 1; xi <= gridPos.x + 1; xi++) {
-                for (int yi = gridPos.y - 1; yi <= gridPos.y + 1; yi++) {
-                    if (TileAt(Vei2(xi, yi)).HasMeme()) {
+            int x_Start = std::max(0, gridPos.x - 1);
+            int y_Start = std::max(0, gridPos.y - 1);
+
+            int x_End = std::min(width, gridPos.x + 1);            
+            int y_End = std::min(height, gridPos.y + 1);
+
+            for (int xi=  x_Start; xi< x_End; xi++) {
+                for (int yi = y_Start; yi < y_End; yi++) {
+                    Tile& tile = TileAt(Vei2(xi, yi));
+                    if (tile.HasMeme()) {
                         memeCount++;
                     }
                 }
             }
+
             TileAt(gridPos).UpdateMemesNearby(memeCount);
         }
     }
-    //reveal test
-    /*for (int i = 0; i < 120; i++) {
-        TileAt({ xDist(rng), yDist(rng) }).Reveal();
-    }*/
+    
     
 }
 
@@ -182,7 +197,12 @@ bool MemeField::UpdateOnClick(const Vei2& screenPos)
     Tile& interestedTile = TileAt(gridPos);
 
     if (!interestedTile.IsRevealed() && !interestedTile.IsFlagged() ) {
+        if (interestedTile.GetMemeCount() == 0) {
+            RevealEmptyNeighbours(gridPos);
+        }
+
         interestedTile.Reveal();
+        // insert recursion here for revealing all nearby 0 neighbours tiles
     }
 
     if (interestedTile.HasMeme()) {
@@ -198,9 +218,46 @@ bool MemeField::UpdateOnClick(const Vei2& screenPos)
     
 }
 
+
+
+
+void MemeField::RevealEmptyNeighbours(Vei2& gridPos)
+{
+
+    int x1_limit = std::max(0, gridPos.x - 1);
+    int x2_limit = std::min(width, gridPos.x + 1);
+
+    int y1_limit = std::max(0, gridPos.y - 1);
+    int y2_limit = std::min(height, gridPos.y + 1);
+
+    for (int xi = x1_limit; xi <= x2_limit ; xi++) {
+        for (int yi = y1_limit; yi <= y2_limit ; yi++) {
+            Tile& curiousTile = TileAt(Vei2(xi, yi));
+
+            
+            if (!curiousTile.IsRevealed() && !curiousTile.HasMeme()) {
+                
+                if (curiousTile.GetMemeCount() == 0) {
+                    curiousTile.Reveal();
+                    RevealEmptyNeighbours(Vei2(xi, yi));
+                    
+                }
+                else {
+                    curiousTile.Reveal();
+                    return;
+                }
+            }
+            
+
+        }
+    }
+
+}
+
+
 void MemeField::FlagOnCLick(const Vei2& screenPos)
 {
-    Vei2 gridPos = screenPos / SpriteCodex::tileSize;
+    Vei2 gridPos = (screenPos - topleft)/ SpriteCodex::tileSize;
     assert(gridPos.x >= 0 && gridPos.x < width&& gridPos.y >= 0 && gridPos.y < height);
     Tile& interestedTile = TileAt(gridPos);
 
